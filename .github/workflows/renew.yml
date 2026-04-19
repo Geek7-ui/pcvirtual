@@ -1,0 +1,29 @@
+name: Renew FreeGameHost Server
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # cada 2 horas
+  workflow_dispatch:        # también puedes correrlo manualmente
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install chromium --with-deps
+
+      - name: Run renew script
+        env:
+          COOKIE: ${{ secrets.COOKIE }}
+          XSRF_TOKEN: ${{ secrets.XSRF_TOKEN }}
+        run: node renew.js
