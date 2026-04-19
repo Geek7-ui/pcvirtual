@@ -6,19 +6,20 @@ const { chromium } = require('playwright');
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
   });
 
-  // Inyectar las cookies de sesión
   await context.addCookies([
     {
       name: 'pterodactyl_session',
       value: process.env.COOKIE,
       domain: 'panel.freegamehost.xyz',
-      path: '/'
+      path: '/',
+      secure: true
     },
     {
       name: 'XSRF-TOKEN',
       value: process.env.XSRF_TOKEN,
       domain: 'panel.freegamehost.xyz',
-      path: '/'
+      path: '/',
+      secure: true
     }
   ]);
 
@@ -26,24 +27,25 @@ const { chromium } = require('playwright');
 
   console.log('Navegando a la página...');
   await page.goto('https://panel.freegamehost.xyz/server/02c0a1d9', {
-    waitUntil: 'networkidle'
+    waitUntil: 'networkidle',
+    timeout: 30000
   });
 
-  // Esperar a que el botón Renew esté disponible (no en cooldown)
-  console.log('Esperando el botón Renew...');
+  console.log('Esperando el botón +8 Hours...');
   try {
-    await page.waitForSelector('button:has-text("Renew")', { timeout: 15000 });
+    // Selector preciso con el texto exacto del botón
+    await page.waitForSelector('button:has-text("+8 Hours")', { timeout: 15000 });
     
-    // Esperar el Turnstile
-    await page.waitForTimeout(3000);
+    // Esperar que el Turnstile se resuelva
+    await page.waitForTimeout(4000);
     
-    await page.click('button:has-text("Renew")');
-    console.log('✅ Clic en Renew ejecutado');
+    await page.click('button:has-text("+8 Hours")');
+    console.log('✅ Clic en +8 Hours ejecutado');
     
     await page.waitForTimeout(3000);
     console.log('✅ Renew completado');
   } catch (e) {
-    console.log('⚠️ Botón no disponible (cooldown activo o error):', e.message);
+    console.log('⚠️ Botón no disponible (cooldown activo o sesión expirada):', e.message);
   }
 
   await browser.close();
